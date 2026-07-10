@@ -2,5 +2,6 @@
 {% import "components/form/fields_macros.html.twig" as fields %}
 
 {% block more_fields %}
-    {{ fields.hiddenField("create_at", "now"|date("m/d/Y"), label = 'creation date', options = {}) }}
+    {{ fields.hiddenField("created_at", "now"|date("Y-m-d"), label = 'creation date', options = {}) }}
+    <input type="hidden" name="_glpi_csrf_token" value="{{ csrf_token() }}">
 {% endblock %}

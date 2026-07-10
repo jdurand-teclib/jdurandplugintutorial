@@ -2,7 +2,7 @@
 
 include ('../../../inc/includes.php');
 
-use SuperAsset;
+use GlpiPlugin\Jdplugintutorial\SuperAsset;
 use Search;
 use Html;
 

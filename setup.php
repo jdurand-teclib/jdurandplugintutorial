@@ -31,7 +31,9 @@
  * -------------------------------------------------------------------------
  */
 
-use Glpi\Jdplugintutorial\SuperAsset;
+use GlpiPlugin\Jdplugintutorial\SuperAsset;
+use GlpiPlugin\Jdplugintutorial\SuperAsset_Item;
+use Computer;
 use Glpi\Plugin\Hooks;
 
 /** @phpstan-ignore theCodingMachineSafe.function (safe to assume this isn't already defined) */
@@ -49,17 +51,41 @@ define("PLUGIN_JDPLUGINTUTORIAL_MAX_GLPI_VERSION", "11.0.99");
  * Init hooks of the plugin.
  * REQUIRED
  */
-function plugin_init_jdplugintutorial(): void 
+function plugin_init_jdplugintutorial(): void
 {
     global $PLUGIN_HOOKS;
-
-    require_once(DIR . '/vendor/autoload.php');
 
     //add menu hook
     $PLUGIN_HOOKS[Hooks::MENU_TOADD]['jdplugintutorial'] = [
         // insert into 'plugin menu'
         'plugins' => SuperAsset::class
     ];
+
+    // callback a function (declared in hook.php)
+    $PLUGIN_HOOKS[Hooks::ITEM_UPDATE]['jdplugintutorial'] = [
+        'Computer' => 'jdplugintutorial_computer_updated'
+    ];
+
+    // callback a class method
+    $PLUGIN_HOOKS[Hooks::ITEM_PURGE]['jdplugintutorial'] = [
+        'Computer' => 'jdplugintutorial_purge_computer_called'
+    ];
+
+    Plugin::registerClass(SuperAsset_Item::class, [
+        'addtabon' => Computer::class
+    ]);
+
+    // css & js
+    $PLUGIN_HOOKS[Hooks::ADD_CSS]['jdplugintutorial'] = 'jdplugintutorial.css';
+    $PLUGIN_HOOKS[Hooks::ADD_JAVASCRIPT]['jdplugintutorial'] = [
+        'js/common.js',
+    ];
+
+    // on ticket page (in edition)
+    if (strpos($_SERVER['REQUEST_URI'], "ticket.form.php") !== false
+        && isset($_GET['id'])) {
+        $PLUGIN_HOOKS[Hooks::ADD_JAVASCRIPT]['jdplugintutorial'][] = 'js/ticket.js.php';
+    }
 }
 
 /**

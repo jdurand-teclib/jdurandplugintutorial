@@ -2,7 +2,7 @@
 
 use DBConnection;
 use GlpiPlugin\Jdplugintutorial\SuperAsset;
-use Migtation;
+use GlpiPlugin\Jdplugintutorial\SuperAsset_Item;
 
 /**
  * -------------------------------------------------------------------------
@@ -64,6 +64,24 @@ function plugin_jdplugintutorial_install(): bool {
         $DB->doQuery($query);
     }
 
+    $items_table = SuperAsset_Item::getTable();
+    if(!$DB->tableExists($items_table)){
+        //table creation query
+        $query2 = "CREATE TABLE `$items_table` (
+                    `id`        int unsigned NOT NULL AUTO_INCREMENT,
+                    `plugin_jdplugintutorial_superassets_id`        int(11) NOT NULL DEFAULT '0',
+                    `itemtype`      VARCHAR(255) DEFAULT NULL,
+                    `items_id`      int(11) NOT NULL DEFAULT '0',
+                    PRIMARY KEY (`id`),
+                    KEY `plugin_jdplugintutorial_superassets_id` (`plugin_jdplugintutorial_superassets_id`),
+                    KEY `items_id` (`items_id`),
+                    KEY `itemtype` (`itemtype`,`items_id`)
+                ) ENGINE=InnoDB
+                DEFAULT CHARSET={$default_charset}
+                COLLATE={$default_collation}";
+        $DB->doQuery($query2);
+    }
+
     if ($DB->tableExists($table)) {
         // missing field
         $migration->addField(
@@ -78,6 +96,28 @@ function plugin_jdplugintutorial_install(): bool {
             'fieldname'
         );
     }
+
+    if ($DB->tableExists($items_table)) {
+        // missing field
+        $migration->addField(
+            $items_table,
+            'fieldname',
+            'string'
+        );
+
+        // missing index
+        $migration->addKey(
+            $items_table,
+            'fieldname'
+        );
+    }
+
+    $DB->insert("glpi_displaypreferences", [
+        'itemtype'  => SuperAsset::getType(),
+        'num'       => 3,
+        'rank'      => 1,
+        'users_id'  => 0,
+    ]);
 
     //execute the whole migration
     $migration->executeMigration();
@@ -94,6 +134,7 @@ function plugin_jdplugintutorial_uninstall(): bool
 
     $tables = [
         SuperAsset::getTable(),
+        SuperAsset_Item::getTable(),
     ];
 
     foreach ($tables as $table) {
@@ -104,5 +145,47 @@ function plugin_jdplugintutorial_uninstall(): bool
         }
     }
 
+    $DB->delete("glpi_displaypreferences", [
+        'itemtype' => SuperAsset::getType()
+    ]);
+
    return true;
+}
+
+function plugin_jdplugintutorial_getAddSearchOptionsNew($itemtype)
+{
+    $sopt = [];
+
+    if ($itemtype == Computer::class) {
+        $sopt[] = [
+            'id'           => 12345,
+            'table'        => Superasset::getTable(),
+            'field'        => 'name',
+            'name'         => __('Associated Superassets', 'myplugin'),
+            'datatype'     => 'itemlink',
+            'forcegroupby' => true,
+            'usehaving'    => true,
+            'joinparams'   => [
+                'beforejoin' => [
+                    'table'      => Superasset_Item::getTable(),
+                    'joinparams' => [
+                        'jointype' => 'itemtype_item',
+                    ]
+                ]
+            ]
+        ];
+    }
+
+    return $sopt;
+}
+
+function jdplugintutorial_purge_computer_called(CommonDBTM $item)
+{
+    global $DB;
+    $computerId = $item->fields['id'];
+
+    $DB->delete(SuperAsset_Item::getTable(), [
+        'items_id' => $computerId,
+        'itemtype' => Computer::getType()
+    ]);
 }
