@@ -33,8 +33,12 @@
 
 use GlpiPlugin\Jdplugintutorial\SuperAsset;
 use GlpiPlugin\Jdplugintutorial\SuperAsset_Item;
+use GlpiPlugin\Jdplugintutorial\Config;
+use GlpiPlugin\Jdplugintutorial\Profile;
 use Computer;
 use Glpi\Plugin\Hooks;
+use Profile as Glpi_Profile;
+use Config as Glpi_Config;
 
 /** @phpstan-ignore theCodingMachineSafe.function (safe to assume this isn't already defined) */
 define('PLUGIN_JDPLUGINTUTORIAL_VERSION', '0.0.1');
@@ -53,6 +57,8 @@ define("PLUGIN_JDPLUGINTUTORIAL_MAX_GLPI_VERSION", "11.0.99");
  */
 function plugin_init_jdplugintutorial(): void
 {
+    // ##### Hooks ##### //
+
     global $PLUGIN_HOOKS;
 
     //add menu hook
@@ -71,21 +77,43 @@ function plugin_init_jdplugintutorial(): void
         'Computer' => 'jdplugintutorial_purge_computer_called'
     ];
 
-    Plugin::registerClass(SuperAsset_Item::class, [
-        'addtabon' => Computer::class
-    ]);
-
     // css & js
     $PLUGIN_HOOKS[Hooks::ADD_CSS]['jdplugintutorial'] = 'jdplugintutorial.css';
-    $PLUGIN_HOOKS[Hooks::ADD_JAVASCRIPT]['jdplugintutorial'] = [
-        'js/common.js',
-    ];
+    $PLUGIN_HOOKS[Hooks::ADD_JAVASCRIPT]['jdplugintutorial'] = 'js/common.js';
 
     // on ticket page (in edition)
     if (strpos($_SERVER['REQUEST_URI'], "ticket.form.php") !== false
         && isset($_GET['id'])) {
-        $PLUGIN_HOOKS[Hooks::ADD_JAVASCRIPT]['jdplugintutorial'][] = 'js/ticket.js.php';
+        $PLUGIN_HOOKS[Hooks::ADD_JAVASCRIPT]['jdplugintutorial'] = 'js/ticket.js.php';
     }
+
+    $PLUGIN_HOOKS[Hooks::PRE_ITEM_FORM]['jdplugintutorial'] = [SuperAsset::class, 'preItemForm'];
+
+    $PLUGIN_HOOKS[Hooks::USE_MASSIVE_ACTION]['jdplugintutorial'] = true;
+
+    // ##### Classes ##### //
+
+    Plugin::registerClass(SuperAsset_Item::class, [
+        'addtabon' => Computer::class,
+    ]);
+
+    Plugin::registerClass(Config::class, [
+        'addtabon' => Glpi_Config::class
+    ]);
+
+    Plugin::registerClass(Profile::class, [
+        'addtabon' => Glpi_Profile::class
+    ]);
+
+    Plugin::registerClass(SuperAsset::class, [
+        'notificationtemplates_types' => true,
+    ]);
+
+    Notification_NotificationTemplate::registerMode(
+         Notification_NotificationTemplate::MODE_MAIL, //mode itself
+         __('Email', 'plugin_email'),                //label
+         'jdplugintutorial'                                   //plugin name
+      );
 }
 
 /**

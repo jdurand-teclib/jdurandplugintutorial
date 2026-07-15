@@ -3,17 +3,21 @@
 namespace GlpiPlugin\Jdplugintutorial;
 
 use CommonDBTM;
+use Dropdown;
 use Notepad;
 use Log;
 use Glpi\Application\View\TemplateRenderer;
 use Session;
 use Computer;
 use GlpiPlugin\Jdplugintutorial\SuperAsset_Item;
+use MassiveAction;
+use NotificationEvent;
 
 class SuperAsset extends CommonDBTM
 {
     // right management, we'll change this later
     static $rightname = 'computer';
+    const RIGHT_ONE = 128;
 
     // permits to automaticaly store logs for this itemtype
     // in glpi_logs table
@@ -139,7 +143,7 @@ class SuperAsset extends CommonDBTM
         return $tabs;
     }
 
-    public static function getIcon(): string 
+    public static function getIcon(): string
     {
         return 'ti ti-rocket';
     }
@@ -203,14 +207,115 @@ class SuperAsset extends CommonDBTM
         return True;
     }
 
-    public function computerPurged(CommonDBTM $item)
+    public static function preItemForm(array $params)
     {
-        global $DB;
-        $computerId = $item->fields['id'];
+        $item = $params['item'];
+        if($item::getType() === Computer::class){
+            $options = $params['options'];
 
-        $DB->delete(SuperAsset_Item::getTable(), [
-            'items_id' => $computerId,
-            'itemtype' => Computer::getType()
+            $nbItems = SuperAsset_Item::countForItem($item);
+            $out = '<tr><th>Linked assets: </th><td><a href="/front/computer.form.php?id=';
+            $out .= $options["id"];
+            $out .= '&forcetab=GlpiPlugin\Jdpluginutorial\SuperAsset_Item$1&forcetab=GlpiPlugin\Jdpluginutorial\SuperAsset_Item$1&forcetab=GlpiPlugin\Jdplugintutorial\SuperAsset_Item$1">';
+            $out .= $nbItems;
+            $out .= '</a></td></tr>';
+            echo $out;
+        }
+    }
+
+    function getRights($interface = 'central')
+    {
+        // if we need to keep standard rights
+        $rights = parent::getRights();
+
+        // define an additional right
+        $rights[self::RIGHT_ONE] = __("My specific rights", "jdplugintutorial");
+
+        return $rights;
+    }
+
+    function getSpecificMassiveActions($checkitem = NULL)
+    {
+        $actions = parent::getSpecificMassiveActions($checkitem);
+
+        // add a single massive action
+        $class        = __CLASS__;
+        $action_key   = "computer_link";
+        $action_label = "Link to a computer";
+        $actions[$class . MassiveAction::CLASS_ACTION_SEPARATOR . $action_key] = $action_label;
+
+        return $actions;
+    }
+
+    static function showMassiveActionsSubForm(MassiveAction $ma)
+    {
+        switch ($ma->getAction()) {
+            case 'computer_link':
+                echo __("Select Computer");
+                echo Dropdown::show(Computer::dropdown());
+
+                break;
+
+            case 'superasset_link':
+                echo __('Select Super Asset');
+                echo Dropdown::show(SuperAsset::dropdown());
+                break;
+        }
+
+        return parent::showMassiveActionsSubForm($ma);
+    }
+
+    static function processMassiveActionsForOneItemtype(
+        MassiveAction $ma,
+        CommonDBTM $item,
+        array $ids
+    ) {
+        switch ($ma->getAction()) {
+            case 'computer_link':
+                $input = $ma->getInput();
+
+                foreach ($ids as $id) {
+
+                    if (
+                        $item->getFromDB($id)
+                        && SuperAsset::linkToComputer($input["computers_id"], $id)
+                    ) {
+                        $ma->itemDone($item->getType(), $id, MassiveAction::ACTION_OK);
+                    } else {
+                        $ma->itemDone($item->getType(), $id, MassiveAction::ACTION_KO);
+                        $ma->addMessage(__("Something went wrong"));
+                    }
+                }
+                return;
+
+            case 'superasset_link':
+                $input = $ma->getInput();
+
+                foreach ($ids as $id) {
+
+                    if (
+                        $item->getFromDB($id)
+                        && SuperAsset::linkToComputer($id, $input["plugin_jdplugintutorial_superassets_id"])
+                    ) {
+                        $ma->itemDone($item->getType(), $id, MassiveAction::ACTION_OK);
+                    } else {
+                        $ma->itemDone($item->getType(), $id, MassiveAction::ACTION_KO);
+                        $ma->addMessage(__("Something went wrong"));
+                    }
+                }
+                return;
+        }
+
+        parent::processMassiveActionsForOneItemtype($ma, $item, $ids);
+    }
+
+    public static function linkToComputer(string $computerId, string $superAssetId): bool {
+        global $DB;
+        $DB->insert(SuperAsset_Item::getTable(), [
+            "plugin_jdplugintutorial_superassets_id" => $superAssetId,
+            "itemtype" => Computer::getType(),
+            "items_id" => $computerId
         ]);
+        return true;
     }
 }

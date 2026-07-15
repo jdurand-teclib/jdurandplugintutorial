@@ -3,6 +3,8 @@
 use DBConnection;
 use GlpiPlugin\Jdplugintutorial\SuperAsset;
 use GlpiPlugin\Jdplugintutorial\SuperAsset_Item;
+use GlpiPlugin\Jdplugintutorial\Profile;
+use Config;
 
 /**
  * -------------------------------------------------------------------------
@@ -122,6 +124,19 @@ function plugin_jdplugintutorial_install(): bool {
     //execute the whole migration
     $migration->executeMigration();
 
+    // Default values for the plugin's configuration
+    Config::setConfigurationValues('plugin:jdplugintutorial', [
+        'jdplugintutorial_computer_tab' => '1',
+        'jdplugintutorial_computer_form' => '1',
+    ]);
+
+    // add rights to current profile
+   foreach (Profile::getAllRights() as $right) {
+      ProfileRight::addProfileRights([$right['field']]);
+   }
+
+   Config::setConfigurationValues('core', ['notifications_mailing' => 0]);
+
     return true;
 }
 
@@ -145,9 +160,21 @@ function plugin_jdplugintutorial_uninstall(): bool
         }
     }
 
+    // Delete display preferences for columns
     $DB->delete("glpi_displaypreferences", [
         'itemtype' => SuperAsset::getType()
     ]);
+
+    // Delete default config
+    $config = new Config();
+    $config->deleteByCriteria(['context' => 'plugin:jdplugintutorial']);
+
+    // delete rights for current profile
+   foreach (Profile::getAllRights() as $right) {
+      ProfileRight::deleteProfileRights([$right['field']]);
+   }
+
+   Config::deleteConfigurationValues('core', ['notifications_mailing']);
 
    return true;
 }
@@ -188,4 +215,25 @@ function jdplugintutorial_purge_computer_called(CommonDBTM $item)
         'items_id' => $computerId,
         'itemtype' => Computer::getType()
     ]);
+}
+
+function jdplugintutorial_pre_item_form_computer(array $params): string
+{
+    $nbItems = SuperAsset_Item::countForItem($params[Computer::class]);
+    return '<tr><a href="/front/computer.form.php?id=5&forcetab=PluginJdplugintutorialSuperAsset$1">'.$nbItems.'</a></tr>';
+}
+
+function plugin_jdplugintutorial_MassiveActions($type)
+{
+   $actions = [];
+   switch ($type) {
+      case Computer::class:
+         $class = SuperAsset::class;
+         $key   = 'superasset_link';
+         $label = __("Link SuperAsset");
+         $actions[$class . MassiveAction::CLASS_ACTION_SEPARATOR . $key] = $label;
+
+         break;
+   }
+   return $actions;
 }
