@@ -39,9 +39,10 @@ use Computer;
 use Glpi\Plugin\Hooks;
 use Profile as Glpi_Profile;
 use Config as Glpi_Config;
+use Crontask;
 
 /** @phpstan-ignore theCodingMachineSafe.function (safe to assume this isn't already defined) */
-define('PLUGIN_JDPLUGINTUTORIAL_VERSION', '0.0.1');
+define('PLUGIN_JDPLUGINTUTORIAL_VERSION', '0.0.2');
 
 // Minimal GLPI version, inclusive
 /** @phpstan-ignore theCodingMachineSafe.function (safe to assume this isn't already defined) */
@@ -92,9 +93,10 @@ function plugin_init_jdplugintutorial(): void
     $PLUGIN_HOOKS[Hooks::USE_MASSIVE_ACTION]['jdplugintutorial'] = true;
 
     // ##### Classes ##### //
+    $relatedTypes = [Computer::class];
 
     Plugin::registerClass(SuperAsset_Item::class, [
-        'addtabon' => Computer::class,
+        'addtabon' => $relatedTypes,
     ]);
 
     Plugin::registerClass(Config::class, [
@@ -109,11 +111,15 @@ function plugin_init_jdplugintutorial(): void
         'notificationtemplates_types' => true,
     ]);
 
-    Notification_NotificationTemplate::registerMode(
-         Notification_NotificationTemplate::MODE_MAIL, //mode itself
-         __('Email', 'plugin_email'),                //label
-         'jdplugintutorial'                                   //plugin name
-      );
+    // CronTask::register(
+    //     SuperAsset::class,
+    //     'myaction',
+    //     HOUR_TIMESTAMP,
+    //     [
+    //         'comment'   => '',
+    //         'mode'      => CronTask::MODE_EXTERNAL
+    //     ]
+    // );
 }
 
 /**

@@ -4,18 +4,19 @@ namespace GlpiPlugin\Jdplugintutorial;
 
 use NotificationTarget;
 
-class NotificationTargetSuperasset extends NotificationTarget
+class NotificationTargetSuperAsset extends NotificationTarget
 {
 
-    function getEvents()
+    public function getEvents(): array
     {
         return [
             'my_event_key' => __('My event label', 'jdplugintutorial')
         ];
     }
 
-    function getDatasForTemplate($event, $options = [])
+    public function getDatasForTemplate($event, $options = []): void
     {
-        $this->datas['##myplugin.name##'] = __('Name');
+        $this->datas['##superasset.phonenumber##'] = "This is a valid phone number";
+        $this->datas['##jdplugintutorial.name##'] = __('Name');
     }
 }

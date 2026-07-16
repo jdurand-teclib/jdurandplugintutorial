@@ -4,7 +4,14 @@ use DBConnection;
 use GlpiPlugin\Jdplugintutorial\SuperAsset;
 use GlpiPlugin\Jdplugintutorial\SuperAsset_Item;
 use GlpiPlugin\Jdplugintutorial\Profile;
+use GlpiPlugin\Jdplugintutorial\NotificationTargetSuperAsset;
+use NotificationTemplate;
+use NotificationTemplateTranslation;
 use Config;
+use Notification;
+use NotificationTarget;
+use Notification_NotificationTemplate;
+use CronTask;
 
 /**
  * -------------------------------------------------------------------------
@@ -71,9 +78,9 @@ function plugin_jdplugintutorial_install(): bool {
         //table creation query
         $query2 = "CREATE TABLE `$items_table` (
                     `id`        int unsigned NOT NULL AUTO_INCREMENT,
-                    `plugin_jdplugintutorial_superassets_id`        int(11) NOT NULL DEFAULT '0',
+                    `plugin_jdplugintutorial_superassets_id`        int unsigned NOT NULL DEFAULT '0',
                     `itemtype`      VARCHAR(255) DEFAULT NULL,
-                    `items_id`      int(11) NOT NULL DEFAULT '0',
+                    `items_id`      int unsigned NOT NULL DEFAULT '0',
                     PRIMARY KEY (`id`),
                     KEY `plugin_jdplugintutorial_superassets_id` (`plugin_jdplugintutorial_superassets_id`),
                     KEY `items_id` (`items_id`),
@@ -114,6 +121,8 @@ function plugin_jdplugintutorial_install(): bool {
         );
     }
 
+    // ##### Display columns in SuperAssets list ##### //
+
     $DB->insert("glpi_displaypreferences", [
         'itemtype'  => SuperAsset::getType(),
         'num'       => 3,
@@ -135,7 +144,59 @@ function plugin_jdplugintutorial_install(): bool {
       ProfileRight::addProfileRights([$right['field']]);
    }
 
-   Config::setConfigurationValues('core', ['notifications_mailing' => 0]);
+   // ##### Notifications Setup ##### //
+
+   $DB->insert(NotificationTemplate::getTable(), [
+        'name' => 'Automatic Super Asset notification template',
+        'itemtype' => SuperAsset::getType(),
+        'css' => "body {background-color: purple;}",
+    ]);
+
+    $templateId = $DB->insertId();
+
+    $DB->insert(NotificationTemplateTranslation::getTable(), [
+        'notificationtemplates_id' => $templateId,
+        'subject' => "##superasset.name##",
+        'content_text' => '##superasset.phonenumber##',
+        'content_html' => '&lt;p&gt;##superasset.name## : ##superasset.phonenumber##&lt;/p&gt;'
+    ]);
+    $notificationTarget = new NotificationTargetSuperAsset();
+    foreach($notificationTarget->getEvents() as $key => $label) {
+        $DB->insert(Notification::getTable(), [
+            'name' => 'Automatic Super Asset notification',
+            'itemtype' => SuperAsset::getType(),
+            'event' => $key,
+            'is_recursive' => 0,
+            'is_active' => 1,
+            'allow_response' => 0,
+            'attach_documents' => -2
+        ]);
+        $notificationId = $DB->insertId();
+
+        $DB->insert(NotificationTarget::getTable(), [
+            'items_id' => 4,
+            'type' => 2,
+            'notifications_id' => $notificationId,
+            'is_exclusion' => 0
+        ]);
+
+        $DB->insert(Notification_NotificationTemplate::getTable(), [
+            'notifications_id' => $notificationId,
+            'mode' => Notification_NotificationTemplate::MODE_MAIL,
+            'notificationtemplates_id' => $templateId
+        ]);
+   }
+
+    // ##### Cron setup ##### //
+    CronTask::register(
+        SuperAsset::class,
+        'createautomaticasset',
+        HOUR_TIMESTAMP,
+        [
+            'comment'   => '',
+            'mode'      => CronTask::MODE_EXTERNAL
+        ]
+    );
 
     return true;
 }
@@ -174,7 +235,53 @@ function plugin_jdplugintutorial_uninstall(): bool
       ProfileRight::deleteProfileRights([$right['field']]);
    }
 
-   Config::deleteConfigurationValues('core', ['notifications_mailing']);
+   // ##### Clean Notifications setup ##### //
+
+   $notificationIterator = $DB->request([
+        'SELECT' => ['id'],
+        'FROM'   => Notification::getTable(),
+        'WHERE'  => [
+            'itemtype' => SuperAsset::getType()
+        ],
+    ]);
+
+    $templatesIterator = $DB->request([
+        'SELECT' => ['id'],
+        'FROM'   => NotificationTemplate::getTable(),
+        'WHERE'  => [
+            'itemtype' => SuperAsset::getType()
+        ],
+    ]);
+
+    $notificationsIds = [];
+    foreach($notificationIterator as $notification) {
+        $notificationsIds[] = $notification['id'];
+    }
+
+    $templatesIds = [];
+    foreach($templatesIterator as $template) {
+        $templatesIds[] = $template['id'];
+    }
+
+    $DB->delete(Notification::getTable(), [
+        'itemtype' => SuperAsset::getType()
+    ]);
+    $DB->delete(NotificationTemplate::getTable(), [
+        'itemtype' => SuperAsset::getType()
+    ]);
+    if (count($notificationsIds) > 0) {
+        $DB->delete(Notification_NotificationTemplate::getTable(), [
+            'notifications_id' => $notificationsIds
+        ]);
+        $DB->delete(NotificationTarget::getTable(), [
+            'notifications_id' => $notificationsIds
+        ]);
+    }
+    if(count($templatesIds) > 0) {
+        $DB->delete(NotificationTemplateTranslation::getTable(), [
+            'notificationtemplates_id' => $templatesIds
+        ]);
+    }
 
    return true;
 }

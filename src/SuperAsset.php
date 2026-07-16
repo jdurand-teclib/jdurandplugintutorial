@@ -16,8 +16,8 @@ use NotificationEvent;
 class SuperAsset extends CommonDBTM
 {
     // right management, we'll change this later
-    static $rightname = 'computer';
-    const RIGHT_ONE = 128;
+    public static $rightname = 'jdplugintutorial::superasset';
+    public const RIGHT_ONE = 128;
 
     // permits to automaticaly store logs for this itemtype
     // in glpi_logs table
@@ -26,12 +26,12 @@ class SuperAsset extends CommonDBTM
     /**
      *  Name of the itemtype
      */
-    static function getTypeName($nb=0)
+    public static function getTypeName($nb=0): string
     {
         return _n('Super-asset', 'Super-assets', $nb);
     }
 
-    function showForm($ID, $options=[])
+    public function showForm($ID, $options=[])
     {
         $this->initForm($ID, $options);
         // @jdplugintutorial is a shortcut to the **templates** directory of your plugin
@@ -51,7 +51,7 @@ class SuperAsset extends CommonDBTM
     /**
      * Define menu name
      */
-    public static function getMenuName($nb = 0)
+    public static function getMenuName($nb = 0): string
     {
         // call class label
         return self::getTypeName($nb);
@@ -62,7 +62,7 @@ class SuperAsset extends CommonDBTM
      *
      * A default implementation is provided by CommonDBTM
      */
-    public static function getMenuContent()
+    public static function getMenuContent(): array
     {
         $title  = self::getMenuName(Session::getPluralNumber());
         $search = self::getSearchURL(false);
@@ -92,7 +92,7 @@ class SuperAsset extends CommonDBTM
         return $menu;
     }
 
-    function rawSearchOptions()
+    public function rawSearchOptions(): array
     {
         $options = [];
 
@@ -132,7 +132,7 @@ class SuperAsset extends CommonDBTM
         return $options;
     }
 
-    function defineTabs($options = [])
+    public function defineTabs($options = []): array
     {
         $tabs = [];
         $this->addDefaultFormTab($tabs)
@@ -148,7 +148,7 @@ class SuperAsset extends CommonDBTM
         return 'ti ti-rocket';
     }
 
-    public function prepareInputForUpdate($input)
+    public function prepareInputForUpdate($input): array | bool
     {
         if(self::checkInput($input)){
             return $input;
@@ -156,17 +156,22 @@ class SuperAsset extends CommonDBTM
         return false;
     }
 
-    public function post_deleteItem()
+    public function post_deleteItem(): void
     {
         self::deleteFromRelations();
     }
 
-    public function post_purgeItem()
+    public function post_purgeItem(): void
     {
         self::deleteFromRelations();
     }
 
-    public function deleteFromRelations()
+    public function post_addItem(): void
+    {
+        NotificationEvent::raiseEvent("my_event_key", $this);
+    }
+
+    public function deleteFromRelations(): void
     {
             $id = $this->getID();
             global $DB;
@@ -176,7 +181,7 @@ class SuperAsset extends CommonDBTM
         ]);
     }
 
-    public function prepareInputForAdd($input)
+    public function prepareInputForAdd($input): array | bool
     {
         if(self::checkInput($input)){
             return $input;
@@ -184,7 +189,7 @@ class SuperAsset extends CommonDBTM
         return false;
     }
 
-    function checkInput($input): bool
+    public function checkInput($input): bool
     {
         if ((array_key_exists('name', $input) && (string) $input['name'] === '') || !array_key_exists('name', $input)) {
             Session::addMessageAfterRedirect(sprintf(__s('The %s field is mandatory'), 'name'), false, ERROR);
@@ -207,7 +212,7 @@ class SuperAsset extends CommonDBTM
         return True;
     }
 
-    public static function preItemForm(array $params)
+    public static function preItemForm(array $params): void
     {
         $item = $params['item'];
         if($item::getType() === Computer::class){
@@ -216,14 +221,14 @@ class SuperAsset extends CommonDBTM
             $nbItems = SuperAsset_Item::countForItem($item);
             $out = '<tr><th>Linked assets: </th><td><a href="/front/computer.form.php?id=';
             $out .= $options["id"];
-            $out .= '&forcetab=GlpiPlugin\Jdpluginutorial\SuperAsset_Item$1&forcetab=GlpiPlugin\Jdpluginutorial\SuperAsset_Item$1&forcetab=GlpiPlugin\Jdplugintutorial\SuperAsset_Item$1">';
+            $out .= '&forcetab=GlpiPlugin\Jdplugintutorial\SuperAsset_Item$1">';
             $out .= $nbItems;
             $out .= '</a></td></tr>';
             echo $out;
         }
     }
 
-    function getRights($interface = 'central')
+    public function getRights($interface = 'central'): array
     {
         // if we need to keep standard rights
         $rights = parent::getRights();
@@ -234,7 +239,7 @@ class SuperAsset extends CommonDBTM
         return $rights;
     }
 
-    function getSpecificMassiveActions($checkitem = NULL)
+    public function getSpecificMassiveActions($checkitem = NULL): array
     {
         $actions = parent::getSpecificMassiveActions($checkitem);
 
@@ -247,7 +252,7 @@ class SuperAsset extends CommonDBTM
         return $actions;
     }
 
-    static function showMassiveActionsSubForm(MassiveAction $ma)
+    public static function showMassiveActionsSubForm(MassiveAction $ma): bool
     {
         switch ($ma->getAction()) {
             case 'computer_link':
@@ -265,11 +270,11 @@ class SuperAsset extends CommonDBTM
         return parent::showMassiveActionsSubForm($ma);
     }
 
-    static function processMassiveActionsForOneItemtype(
+    public static function processMassiveActionsForOneItemtype(
         MassiveAction $ma,
         CommonDBTM $item,
         array $ids
-    ) {
+    ): void {
         switch ($ma->getAction()) {
             case 'computer_link':
                 $input = $ma->getInput();
@@ -316,6 +321,28 @@ class SuperAsset extends CommonDBTM
             "itemtype" => Computer::getType(),
             "items_id" => $computerId
         ]);
+        return true;
+    }
+
+    public static function cronInfo($name): array
+    {
+
+        switch ($name) {
+            case 'createautomaticasset':
+                return ['description' => __('Atuomaticaly create an asset', 'jdplugintutorial')];
+        }
+        return [];
+    }
+
+    public static function cronCreateAutomaticAsset($task = NULL): bool
+    {
+        global $DB;
+        $DB->insert(SuperAsset::getTable(), [
+            'name' => 'Automatic SuperAsset creation',
+            'phonenumber' => '06 57 48 59 68',
+            'created_at' => date('Y-m-d')
+        ]);
+
         return true;
     }
 }

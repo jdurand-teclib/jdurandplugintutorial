@@ -3,62 +3,60 @@
 namespace GlpiPlugin\Jdplugintutorial;
 
 use CommonGLPI;
-use Dropdown;
-use Html;
 use Session;
 use Glpi\Application\View\TemplateRenderer;
+use Config as Glpi_Config;
 
-class Config extends \Config
+class Config extends Glpi_Config
 {
 
-    static function getTypeName($nb = 0)
+    public static function getTypeName($nb = 0): string
     {
         return __('JD Plugin Tutorial', 'jdplugintutorial');
     }
 
-    static function getConfig()
+    public static function getConfig(): array
     {
-        return \Config::getConfigurationValues('plugin:jdplugintutorial');
+        return Glpi_Config::getConfigurationValues('plugin:jdplugintutorial');
     }
 
-    function getTabNameForItem(CommonGLPI $item, $withtemplate = 0)
+    public function getTabNameForItem(CommonGLPI $item, $withtemplate = 0): string
     {
         switch ($item->getType()) {
-            case \Config::class:
+            case Glpi_Config::class:
                 return self::createTabEntry(self::getTypeName());
         }
         return '';
     }
 
-    static function displayTabContentForItem(
+    public static function displayTabContentForItem(
         CommonGLPI $item,
         $tabnum = 1,
         $withtemplate = 0
-    ) {
+    ): bool {
         switch ($item->getType()) {
-            case \Config::class:
-                return self::showForConfig($item, $withtemplate);
+            case Glpi_Config::class:
+                self::showForConfig($item, $withtemplate);
         }
 
         return true;
     }
 
-    static function showForConfig(
-        \Config $config,
+    public static function showForConfig(
+        CommonGLPI $config,
         $withtemplate = 0
-    ) {
+    ): void {
         global $CFG_GLPI;
 
-        if (!self::canView()) {
-            return false;
+        if (self::canView()) {
+
+            $current_config = self::getConfig();
+            $canedit        = Session::haveRight(self::$rightname, UPDATE);
+
+            TemplateRenderer::getInstance()->display('@jdplugintutorial/config.html.twig', [
+                'current_config' => $current_config,
+                'can_edit'       => $canedit
+            ]);
         }
-
-        $current_config = self::getConfig();
-        $canedit        = Session::haveRight(self::$rightname, UPDATE);
-
-        TemplateRenderer::getInstance()->display('@jdplugintutorial/config.html.twig', [
-            'current_config' => $current_config,
-            'can_edit'       => $canedit
-        ]);
     }
 }

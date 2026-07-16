@@ -8,7 +8,6 @@ use Dropdown;
 use Glpi\Application\View\TemplateRenderer;
 use CommonGLPI;
 use Session;
-use Html;
 use Entity;
 
 class SuperAsset_Item extends CommonDBRelation

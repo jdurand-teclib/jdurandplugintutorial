@@ -3,7 +3,6 @@ namespace GlpiPlugin\Jdplugintutorial;
 
 use CommonDBTM;
 use CommonGLPI;
-use Html;
 use Profile as Glpi_Profile;
 use GlpiPlugin\Jdplugintutorial\SuperAsset;
 use Glpi\Application\View\TemplateRenderer;
@@ -12,12 +11,12 @@ class Profile extends CommonDBTM
 {
     public static $rightname = 'profile';
 
-    static function getTypeName($nb = 0)
+    public static function getTypeName($nb = 0): string
     {
         return __("JD Plugin Tutorial", 'jdplugintutorial');
     }
 
-    public function getTabNameForItem(CommonGLPI $item, $withtemplate = 0)
+    public function getTabNameForItem(CommonGLPI $item, $withtemplate = 0): string
     {
         if (
             $item instanceof Glpi_Profile
@@ -28,22 +27,22 @@ class Profile extends CommonDBTM
         return '';
     }
 
-    static function displayTabContentForItem(
+    public static function displayTabContentForItem(
         CommonGLPI $item,
         $tabnum = 1,
         $withtemplate = 0
-    ) {
+    ): bool {
         if (
             $item instanceof Glpi_Profile
             && $item->getField('id')
         ) {
-            return self::showForProfile($item->getID());
+            self::showForProfile($item->getID());
         }
 
         return true;
     }
 
-    static function getAllRights($all = false)
+    public static function getAllRights($all = false): array
     {
         $rights = [
             [
@@ -57,7 +56,7 @@ class Profile extends CommonDBTM
     }
 
 
-    static function showForProfile($profiles_id = 0)
+    public static function showForProfile($profiles_id = 0): void
     {
         $profile = new Glpi_Profile();
         $profile->getFromDB($profiles_id);
@@ -65,7 +64,7 @@ class Profile extends CommonDBTM
         TemplateRenderer::getInstance()->display('@jdplugintutorial/profile.html.twig', [
             'can_edit' => self::canUpdate(),
             'profile'  => $profile,
-            'rights'   => self::getAllRights()
+            'rights'   => self::getAllRights(),
         ]);
     }
 }
