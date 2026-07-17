@@ -36,7 +36,7 @@ class SuperAsset_Item extends CommonDBRelation
             if ($_SESSION['glpishow_count_on_tabs']) {
                 $nb = self::countForMainItem($item);
             }
-            return self::createTabEntry(_n('Associated item', 'Associated items', Session::getPluralNumber()), $nb, $item::getType(), 'ti ti-package');
+            return self::createTabEntry(_n('Associated item', 'Associated items', Session::getPluralNumber()), $nb, $item::class, 'ti ti-package');
         }
         elseif(in_array($item->getType(), SuperAsset::getTypes())){
             if ($_SESSION['glpishow_count_on_tabs']) {
@@ -65,9 +65,9 @@ class SuperAsset_Item extends CommonDBRelation
     /**
      * Specific function for display only items of Superasset
      */
-    public static function showForSuperasset(CommonGLPI $superasset, $withtemplate = 0): void
+    public static function showForSuperasset(CommonDBTM $superasset, int $withtemplate = 0): void
     {
-        $instID = $superasset->getID();
+        (int)$instID = $superasset->getID();
 
         TemplateRenderer::getInstance()->display('components/form/link_existing_or_new.html.twig', [
                 'rand' => mt_rand(),

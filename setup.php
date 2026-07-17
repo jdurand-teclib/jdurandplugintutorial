@@ -39,7 +39,6 @@ use Computer;
 use Glpi\Plugin\Hooks;
 use Profile as Glpi_Profile;
 use Config as Glpi_Config;
-use Crontask;
 
 /** @phpstan-ignore theCodingMachineSafe.function (safe to assume this isn't already defined) */
 define('PLUGIN_JDPLUGINTUTORIAL_VERSION', '0.0.2');
@@ -58,11 +57,16 @@ define("PLUGIN_JDPLUGINTUTORIAL_MAX_GLPI_VERSION", "11.0.99");
  */
 function plugin_init_jdplugintutorial(): void
 {
-    // ##### Hooks ##### //
 
+    /**
+     * @global array<string,array<string,array<string,string>>> $PLUGIN_HOOKS
+     */
     global $PLUGIN_HOOKS;
 
+    // ##### Hooks ##### //
+
     //add menu hook
+
     $PLUGIN_HOOKS[Hooks::MENU_TOADD]['jdplugintutorial'] = [
         // insert into 'plugin menu'
         'plugins' => SuperAsset::class
@@ -110,16 +114,6 @@ function plugin_init_jdplugintutorial(): void
     Plugin::registerClass(SuperAsset::class, [
         'notificationtemplates_types' => true,
     ]);
-
-    // CronTask::register(
-    //     SuperAsset::class,
-    //     'myaction',
-    //     HOUR_TIMESTAMP,
-    //     [
-    //         'comment'   => '',
-    //         'mode'      => CronTask::MODE_EXTERNAL
-    //     ]
-    // );
 }
 
 /**

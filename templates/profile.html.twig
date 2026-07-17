@@ -4,7 +4,10 @@
         <input type="hidden" name="id" value="{{ profile.fields['id'] }}">
         <input type="hidden" name="_glpi_csrf_token" value="{{ csrf_token() }}"> {# useless for GLPI 12 #}
 
-        {{profile.displayRightsChoiceMatrix(rights)}}
+        {%set rnd = profile.displayRightsChoiceMatrix(rights, {
+            'canedit': can_edit,
+            'title': __("Super Asset", 'superasset'),
+        })%}
 
         {% if can_edit %}
             <button type="submit" class="btn btn-primary mx-1" name="update" value="1">

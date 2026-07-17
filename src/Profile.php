@@ -13,7 +13,7 @@ class Profile extends CommonDBTM
 
     public static function getTypeName($nb = 0): string
     {
-        return __("JD Plugin Tutorial", 'jdplugintutorial');
+        return __("Super Assets", 'jdplugintutorial');
     }
 
     public function getTabNameForItem(CommonGLPI $item, $withtemplate = 0): string
@@ -22,7 +22,7 @@ class Profile extends CommonDBTM
             $item instanceof Glpi_Profile
             && $item->getField('id')
         ) {
-            return self::createTabEntry(self::getTypeName());
+            return self::createTabEntry(text: self::getTypeName(), icon: SuperAsset::getIcon());
         }
         return '';
     }
@@ -42,7 +42,14 @@ class Profile extends CommonDBTM
         return true;
     }
 
-    public static function getAllRights($all = false): array
+    /**
+     * Return the list of rights managed by this plugin
+     *
+     * @param bool $all wether we return all rights or not
+     *
+     * @return array<int, array<string, string>>
+     **/
+    public static function getAllRights(bool $all = false): array
     {
         $rights = [
             [
@@ -55,8 +62,12 @@ class Profile extends CommonDBTM
         return $rights;
     }
 
-
-    public static function showForProfile($profiles_id = 0): void
+    /**
+     * Displays the form to manage the rights for a given user
+     *
+     * @param int $profiles_id the user we want to manage rights for
+     **/
+    public static function showForProfile(int $profiles_id = 0): void
     {
         $profile = new Glpi_Profile();
         $profile->getFromDB($profiles_id);

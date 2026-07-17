@@ -286,7 +286,12 @@ function plugin_jdplugintutorial_uninstall(): bool
    return true;
 }
 
-function plugin_jdplugintutorial_getAddSearchOptionsNew($itemtype)
+/**
+ * Allows the research of linked SuperAsset items on core Assets
+ * @param string $itemtype The type of a core Asset
+ * @return list<array<string,array<string,array<string, array<string, string>|string>>|bool|int|string>> An array of searchoptions for core Assets
+ */
+function plugin_jdplugintutorial_getAddSearchOptionsNew(string $itemtype): array
 {
     $sopt = [];
 
@@ -313,7 +318,12 @@ function plugin_jdplugintutorial_getAddSearchOptionsNew($itemtype)
     return $sopt;
 }
 
-function jdplugintutorial_purge_computer_called(CommonDBTM $item)
+/**
+ * Fallback method called when a Computer is purged. Deletes all relations between this computer and any SuperAsset item
+ * @param CommonDBTM $item Purged computer
+ * @return void
+ */
+function jdplugintutorial_purge_computer_called(CommonDBTM $item): void
 {
     global $DB;
     $computerId = $item->fields['id'];
@@ -324,13 +334,23 @@ function jdplugintutorial_purge_computer_called(CommonDBTM $item)
     ]);
 }
 
+/**
+ * Displays a lign in the header of the Computer asset form
+ * @param array<string, mixed> $params A set of informations about the targeted Computer form
+ * @return string The HTML content to display
+ */
 function jdplugintutorial_pre_item_form_computer(array $params): string
 {
     $nbItems = SuperAsset_Item::countForItem($params[Computer::class]);
     return '<tr><a href="/front/computer.form.php?id=5&forcetab=PluginJdplugintutorialSuperAsset$1">'.$nbItems.'</a></tr>';
 }
 
-function plugin_jdplugintutorial_MassiveActions($type)
+/**
+ * Adds new massive actions related to the SuperAsset on core assets
+ * @param string $type The type of a core Asset
+ * @return string[]
+ */
+function plugin_jdplugintutorial_MassiveActions(string $type): array
 {
    $actions = [];
    switch ($type) {

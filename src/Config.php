@@ -12,9 +12,13 @@ class Config extends Glpi_Config
 
     public static function getTypeName($nb = 0): string
     {
-        return __('JD Plugin Tutorial', 'jdplugintutorial');
+        return __('Super Asset configurations', 'jdplugintutorial');
     }
 
+    /**
+     * Returns a set of configurations for the current context
+     * @return array set of configurations.
+     */
     public static function getConfig(): array
     {
         return Glpi_Config::getConfigurationValues('plugin:jdplugintutorial');
@@ -44,7 +48,7 @@ class Config extends Glpi_Config
 
     public static function showForConfig(
         CommonGLPI $config,
-        $withtemplate = 0
+        int $withtemplate = 0
     ): void {
         global $CFG_GLPI;
 
