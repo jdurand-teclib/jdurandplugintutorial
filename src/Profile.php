@@ -1,4 +1,5 @@
 <?php
+
 namespace GlpiPlugin\Jdplugintutorial;
 
 use CommonDBTM;
@@ -30,7 +31,7 @@ class Profile extends CommonDBTM
     public static function displayTabContentForItem(
         CommonGLPI $item,
         $tabnum = 1,
-        $withtemplate = 0
+        $withtemplate = 0,
     ): bool {
         if (
             $item instanceof Glpi_Profile
@@ -55,8 +56,8 @@ class Profile extends CommonDBTM
             [
                 'itemtype' => SuperAsset::class,
                 'label'    => SuperAsset::getTypeName(),
-                'field'    => 'jdplugintutorial::superasset'
-            ]
+                'field'    => 'jdplugintutorial::superasset',
+            ],
         ];
 
         return $rights;

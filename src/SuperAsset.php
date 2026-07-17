@@ -13,6 +13,8 @@ use GlpiPlugin\Jdplugintutorial\SuperAsset_Item;
 use MassiveAction;
 use NotificationEvent;
 
+use function Safe\preg_match;
+
 class SuperAsset extends CommonDBTM
 {
     // right management, we'll change this later
@@ -26,12 +28,12 @@ class SuperAsset extends CommonDBTM
     /**
      *  Name of the itemtype
      */
-    public static function getTypeName($nb=0): string
+    public static function getTypeName($nb = 0): string
     {
         return _n('Super-asset', 'Super-assets', $nb);
     }
 
-    public function showForm($ID, $options=[])
+    public function showForm($ID, $options = [])
     {
         $this->initForm($ID, $options);
         // @jdplugintutorial is a shortcut to the **templates** directory of your plugin
@@ -83,10 +85,10 @@ class SuperAsset extends CommonDBTM
                     //define standard icons in sub-menu
                     'links' => [
                         'search' => $search,
-                        'add'    => $form
-                    ]
-                ]
-            ]
+                        'add'    => $form,
+                    ],
+                ],
+            ],
         ];
 
         return $menu;
@@ -98,7 +100,7 @@ class SuperAsset extends CommonDBTM
 
         $options[] = [
             'id'   => 'common',
-            'name' => __('Characteristics')
+            'name' => __('Characteristics'),
         ];
 
         $options[] = [
@@ -106,14 +108,14 @@ class SuperAsset extends CommonDBTM
             'table' => self::getTable(),
             'field' => 'name',
             'name'  => __('Name'),
-            'datatype' => 'itemlink'
+            'datatype' => 'itemlink',
         ];
 
         $options[] = [
             'id'    => 2,
             'table' => self::getTable(),
             'field' => 'id',
-            'name'  => __('ID')
+            'name'  => __('ID'),
         ];
 
         $options[] = [
@@ -126,7 +128,7 @@ class SuperAsset extends CommonDBTM
             'usehaving'    => true,
             'joinparams'   => [
                 'jointype' => 'child',
-            ]
+            ],
         ];
 
         return $options;
@@ -148,9 +150,9 @@ class SuperAsset extends CommonDBTM
         return 'ti ti-rocket';
     }
 
-    public function prepareInputForUpdate($input): array | bool
+    public function prepareInputForUpdate($input): array|bool
     {
-        if(self::checkInput($input)){
+        if (self::checkInput($input)) {
             return $input;
         }
         return false;
@@ -173,17 +175,17 @@ class SuperAsset extends CommonDBTM
 
     public function deleteFromRelations(): void
     {
-            $id = $this->getID();
-            global $DB;
+        $id = $this->getID();
+        global $DB;
 
-            $DB->delete(SuperAsset_Item::getTable(), [
-            'plugin_jdplugintutorial_superassets_id' => $id
+        $DB->delete(SuperAsset_Item::getTable(), [
+            'plugin_jdplugintutorial_superassets_id' => $id,
         ]);
     }
 
-    public function prepareInputForAdd($input): array | bool
+    public function prepareInputForAdd($input): array|bool
     {
-        if(self::checkInput($input)){
+        if (self::checkInput($input)) {
             return $input;
         }
         return false;
@@ -204,18 +206,18 @@ class SuperAsset extends CommonDBTM
         }
 
         $phonenumberformat = "/^(?:(?:\+|00)33|0)\s*[1-9](?:[\s.-]*\d{2}){4}$/";
-        if(!preg_match($phonenumberformat, $input["phonenumber"])) {
+        if (!preg_match($phonenumberformat, $input["phonenumber"])) {
             Session::addMessageAfterRedirect(sprintf(__s('The %s must be in french format (XX XX XX XX XX or +33 X XX XX XX XX'), 'phonenumber'), false, ERROR);
 
             return false;
         }
-        return True;
+        return true;
     }
 
     public static function preItemForm(array $params): void
     {
         $item = $params['item'];
-        if($item::getType() === Computer::class){
+        if ($item::getType() === Computer::class) {
             $options = $params['options'];
 
             $nbItems = SuperAsset_Item::countForItem($item);
@@ -239,7 +241,7 @@ class SuperAsset extends CommonDBTM
         return $rights;
     }
 
-    public function getSpecificMassiveActions($checkitem = NULL): array
+    public function getSpecificMassiveActions($checkitem = null): array
     {
         $actions = parent::getSpecificMassiveActions($checkitem);
 
@@ -273,7 +275,7 @@ class SuperAsset extends CommonDBTM
     public static function processMassiveActionsForOneItemtype(
         MassiveAction $ma,
         CommonDBTM $item,
-        array $ids
+        array $ids,
     ): void {
         switch ($ma->getAction()) {
             case 'computer_link':
@@ -314,12 +316,13 @@ class SuperAsset extends CommonDBTM
         parent::processMassiveActionsForOneItemtype($ma, $item, $ids);
     }
 
-    public static function linkToComputer(string $computerId, string $superAssetId): bool {
+    public static function linkToComputer(string $computerId, string $superAssetId): bool
+    {
         global $DB;
         $DB->insert(SuperAsset_Item::getTable(), [
             "plugin_jdplugintutorial_superassets_id" => $superAssetId,
             "itemtype" => Computer::getType(),
-            "items_id" => $computerId
+            "items_id" => $computerId,
         ]);
         return true;
     }
@@ -334,13 +337,13 @@ class SuperAsset extends CommonDBTM
         return [];
     }
 
-    public static function cronCreateAutomaticAsset($task = NULL): bool
+    public static function cronCreateAutomaticAsset($task = null): bool
     {
         global $DB;
         $DB->insert(SuperAsset::getTable(), [
             'name' => 'Automatic SuperAsset creation',
             'phonenumber' => '06 57 48 59 68',
-            'created_at' => date('Y-m-d')
+            'created_at' => date('Y-m-d'),
         ]);
 
         return true;

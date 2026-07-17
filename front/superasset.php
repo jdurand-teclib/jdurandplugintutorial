@@ -1,6 +1,6 @@
 <?php
 
-include ('../../../inc/includes.php');
+include('../../../inc/includes.php');
 
 use GlpiPlugin\Jdplugintutorial\SuperAsset;
 use Search;
@@ -11,7 +11,7 @@ Html::header(
     $_SERVER['PHP_SELF'],
     "plugins",
     SuperAsset::class,
-    "superasset"
+    "superasset",
 );
 Search::show(SuperAsset::class);
 Html::footer();

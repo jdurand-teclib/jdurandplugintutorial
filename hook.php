@@ -47,7 +47,8 @@ use CronTask;
 /**
  * Plugin install process
  */
-function plugin_jdplugintutorial_install(): bool {
+function plugin_jdplugintutorial_install(): bool
+{
     global $DB;
 
     $default_charset   = DBConnection::getDefaultCharset();
@@ -74,7 +75,7 @@ function plugin_jdplugintutorial_install(): bool {
     }
 
     $items_table = SuperAsset_Item::getTable();
-    if(!$DB->tableExists($items_table)){
+    if (!$DB->tableExists($items_table)) {
         //table creation query
         $query2 = "CREATE TABLE `$items_table` (
                     `id`        int unsigned NOT NULL AUTO_INCREMENT,
@@ -96,13 +97,13 @@ function plugin_jdplugintutorial_install(): bool {
         $migration->addField(
             $table,
             'fieldname',
-            'string'
+            'string',
         );
 
         // missing index
         $migration->addKey(
             $table,
-            'fieldname'
+            'fieldname',
         );
     }
 
@@ -111,13 +112,13 @@ function plugin_jdplugintutorial_install(): bool {
         $migration->addField(
             $items_table,
             'fieldname',
-            'string'
+            'string',
         );
 
         // missing index
         $migration->addKey(
             $items_table,
-            'fieldname'
+            'fieldname',
         );
     }
 
@@ -140,13 +141,13 @@ function plugin_jdplugintutorial_install(): bool {
     ]);
 
     // add rights to current profile
-   foreach (Profile::getAllRights() as $right) {
-      ProfileRight::addProfileRights([$right['field']]);
-   }
+    foreach (Profile::getAllRights() as $right) {
+        ProfileRight::addProfileRights([$right['field']]);
+    }
 
-   // ##### Notifications Setup ##### //
+    // ##### Notifications Setup ##### //
 
-   $DB->insert(NotificationTemplate::getTable(), [
+    $DB->insert(NotificationTemplate::getTable(), [
         'name' => 'Automatic Super Asset notification template',
         'itemtype' => SuperAsset::getType(),
         'css' => "body {background-color: purple;}",
@@ -158,10 +159,10 @@ function plugin_jdplugintutorial_install(): bool {
         'notificationtemplates_id' => $templateId,
         'subject' => "##superasset.name##",
         'content_text' => '##superasset.phonenumber##',
-        'content_html' => '&lt;p&gt;##superasset.name## : ##superasset.phonenumber##&lt;/p&gt;'
+        'content_html' => '&lt;p&gt;##superasset.name## : ##superasset.phonenumber##&lt;/p&gt;',
     ]);
     $notificationTarget = new NotificationTargetSuperAsset();
-    foreach($notificationTarget->getEvents() as $key => $label) {
+    foreach ($notificationTarget->getEvents() as $key => $label) {
         $DB->insert(Notification::getTable(), [
             'name' => 'Automatic Super Asset notification',
             'itemtype' => SuperAsset::getType(),
@@ -169,7 +170,7 @@ function plugin_jdplugintutorial_install(): bool {
             'is_recursive' => 0,
             'is_active' => 1,
             'allow_response' => 0,
-            'attach_documents' => -2
+            'attach_documents' => -2,
         ]);
         $notificationId = $DB->insertId();
 
@@ -177,15 +178,15 @@ function plugin_jdplugintutorial_install(): bool {
             'items_id' => 4,
             'type' => 2,
             'notifications_id' => $notificationId,
-            'is_exclusion' => 0
+            'is_exclusion' => 0,
         ]);
 
         $DB->insert(Notification_NotificationTemplate::getTable(), [
             'notifications_id' => $notificationId,
             'mode' => Notification_NotificationTemplate::MODE_MAIL,
-            'notificationtemplates_id' => $templateId
+            'notificationtemplates_id' => $templateId,
         ]);
-   }
+    }
 
     // ##### Cron setup ##### //
     CronTask::register(
@@ -194,8 +195,8 @@ function plugin_jdplugintutorial_install(): bool {
         HOUR_TIMESTAMP,
         [
             'comment'   => '',
-            'mode'      => CronTask::MODE_EXTERNAL
-        ]
+            'mode'      => CronTask::MODE_EXTERNAL,
+        ],
     );
 
     return true;
@@ -216,14 +217,14 @@ function plugin_jdplugintutorial_uninstall(): bool
     foreach ($tables as $table) {
         if ($DB->tableExists($table)) {
             $DB->doQuery(
-                "DROP TABLE `$table`"
+                "DROP TABLE `$table`",
             );
         }
     }
 
     // Delete display preferences for columns
     $DB->delete("glpi_displaypreferences", [
-        'itemtype' => SuperAsset::getType()
+        'itemtype' => SuperAsset::getType(),
     ]);
 
     // Delete default config
@@ -231,17 +232,17 @@ function plugin_jdplugintutorial_uninstall(): bool
     $config->deleteByCriteria(['context' => 'plugin:jdplugintutorial']);
 
     // delete rights for current profile
-   foreach (Profile::getAllRights() as $right) {
-      ProfileRight::deleteProfileRights([$right['field']]);
-   }
+    foreach (Profile::getAllRights() as $right) {
+        ProfileRight::deleteProfileRights([$right['field']]);
+    }
 
-   // ##### Clean Notifications setup ##### //
+    // ##### Clean Notifications setup ##### //
 
-   $notificationIterator = $DB->request([
+    $notificationIterator = $DB->request([
         'SELECT' => ['id'],
         'FROM'   => Notification::getTable(),
         'WHERE'  => [
-            'itemtype' => SuperAsset::getType()
+            'itemtype' => SuperAsset::getType(),
         ],
     ]);
 
@@ -249,41 +250,41 @@ function plugin_jdplugintutorial_uninstall(): bool
         'SELECT' => ['id'],
         'FROM'   => NotificationTemplate::getTable(),
         'WHERE'  => [
-            'itemtype' => SuperAsset::getType()
+            'itemtype' => SuperAsset::getType(),
         ],
     ]);
 
     $notificationsIds = [];
-    foreach($notificationIterator as $notification) {
+    foreach ($notificationIterator as $notification) {
         $notificationsIds[] = $notification['id'];
     }
 
     $templatesIds = [];
-    foreach($templatesIterator as $template) {
+    foreach ($templatesIterator as $template) {
         $templatesIds[] = $template['id'];
     }
 
     $DB->delete(Notification::getTable(), [
-        'itemtype' => SuperAsset::getType()
+        'itemtype' => SuperAsset::getType(),
     ]);
     $DB->delete(NotificationTemplate::getTable(), [
-        'itemtype' => SuperAsset::getType()
+        'itemtype' => SuperAsset::getType(),
     ]);
     if (count($notificationsIds) > 0) {
         $DB->delete(Notification_NotificationTemplate::getTable(), [
-            'notifications_id' => $notificationsIds
+            'notifications_id' => $notificationsIds,
         ]);
         $DB->delete(NotificationTarget::getTable(), [
-            'notifications_id' => $notificationsIds
+            'notifications_id' => $notificationsIds,
         ]);
     }
-    if(count($templatesIds) > 0) {
+    if (count($templatesIds) > 0) {
         $DB->delete(NotificationTemplateTranslation::getTable(), [
-            'notificationtemplates_id' => $templatesIds
+            'notificationtemplates_id' => $templatesIds,
         ]);
     }
 
-   return true;
+    return true;
 }
 
 /**
@@ -309,9 +310,9 @@ function plugin_jdplugintutorial_getAddSearchOptionsNew(string $itemtype): array
                     'table'      => Superasset_Item::getTable(),
                     'joinparams' => [
                         'jointype' => 'itemtype_item',
-                    ]
-                ]
-            ]
+                    ],
+                ],
+            ],
         ];
     }
 
@@ -330,7 +331,7 @@ function jdplugintutorial_purge_computer_called(CommonDBTM $item): void
 
     $DB->delete(SuperAsset_Item::getTable(), [
         'items_id' => $computerId,
-        'itemtype' => Computer::getType()
+        'itemtype' => Computer::getType(),
     ]);
 }
 
@@ -342,7 +343,7 @@ function jdplugintutorial_purge_computer_called(CommonDBTM $item): void
 function jdplugintutorial_pre_item_form_computer(array $params): string
 {
     $nbItems = SuperAsset_Item::countForItem($params[Computer::class]);
-    return '<tr><a href="/front/computer.form.php?id=5&forcetab=PluginJdplugintutorialSuperAsset$1">'.$nbItems.'</a></tr>';
+    return '<tr><a href="/front/computer.form.php?id=5&forcetab=PluginJdplugintutorialSuperAsset$1">' . $nbItems . '</a></tr>';
 }
 
 /**
@@ -352,15 +353,15 @@ function jdplugintutorial_pre_item_form_computer(array $params): string
  */
 function plugin_jdplugintutorial_MassiveActions(string $type): array
 {
-   $actions = [];
-   switch ($type) {
-      case Computer::class:
-         $class = SuperAsset::class;
-         $key   = 'superasset_link';
-         $label = __("Link SuperAsset");
-         $actions[$class . MassiveAction::CLASS_ACTION_SEPARATOR . $key] = $label;
+    $actions = [];
+    switch ($type) {
+        case Computer::class:
+            $class = SuperAsset::class;
+            $key   = 'superasset_link';
+            $label = __("Link SuperAsset");
+            $actions[$class . MassiveAction::CLASS_ACTION_SEPARATOR . $key] = $label;
 
-         break;
-   }
-   return $actions;
+            break;
+    }
+    return $actions;
 }

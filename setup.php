@@ -58,9 +58,7 @@ define("PLUGIN_JDPLUGINTUTORIAL_MAX_GLPI_VERSION", "11.0.99");
 function plugin_init_jdplugintutorial(): void
 {
 
-    /**
-     * @global array<string,array<string,array<string,string>>> $PLUGIN_HOOKS
-     */
+    /** @var array $PLUGIN_HOOKS */
     global $PLUGIN_HOOKS;
 
     // ##### Hooks ##### //
@@ -69,17 +67,17 @@ function plugin_init_jdplugintutorial(): void
 
     $PLUGIN_HOOKS[Hooks::MENU_TOADD]['jdplugintutorial'] = [
         // insert into 'plugin menu'
-        'plugins' => SuperAsset::class
+        'plugins' => SuperAsset::class,
     ];
 
     // callback a function (declared in hook.php)
     $PLUGIN_HOOKS[Hooks::ITEM_UPDATE]['jdplugintutorial'] = [
-        'Computer' => 'jdplugintutorial_computer_updated'
+        'Computer' => 'jdplugintutorial_computer_updated',
     ];
 
     // callback a class method
     $PLUGIN_HOOKS[Hooks::ITEM_PURGE]['jdplugintutorial'] = [
-        'Computer' => 'jdplugintutorial_purge_computer_called'
+        'Computer' => 'jdplugintutorial_purge_computer_called',
     ];
 
     // css & js
@@ -104,11 +102,11 @@ function plugin_init_jdplugintutorial(): void
     ]);
 
     Plugin::registerClass(Config::class, [
-        'addtabon' => Glpi_Config::class
+        'addtabon' => Glpi_Config::class,
     ]);
 
     Plugin::registerClass(Profile::class, [
-        'addtabon' => Glpi_Profile::class
+        'addtabon' => Glpi_Profile::class,
     ]);
 
     Plugin::registerClass(SuperAsset::class, [

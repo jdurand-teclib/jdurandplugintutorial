@@ -9,7 +9,6 @@ use Config as Glpi_Config;
 
 class Config extends Glpi_Config
 {
-
     public static function getTypeName($nb = 0): string
     {
         return __('Super Asset configurations', 'jdplugintutorial');
@@ -36,7 +35,7 @@ class Config extends Glpi_Config
     public static function displayTabContentForItem(
         CommonGLPI $item,
         $tabnum = 1,
-        $withtemplate = 0
+        $withtemplate = 0,
     ): bool {
         switch ($item->getType()) {
             case Glpi_Config::class:
@@ -48,7 +47,7 @@ class Config extends Glpi_Config
 
     public static function showForConfig(
         CommonGLPI $config,
-        int $withtemplate = 0
+        int $withtemplate = 0,
     ): void {
         global $CFG_GLPI;
 
@@ -59,7 +58,7 @@ class Config extends Glpi_Config
 
             TemplateRenderer::getInstance()->display('@jdplugintutorial/config.html.twig', [
                 'current_config' => $current_config,
-                'can_edit'       => $canedit
+                'can_edit'       => $canedit,
             ]);
         }
     }

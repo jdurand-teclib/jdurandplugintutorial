@@ -8,15 +8,13 @@ use NotificationTarget;
  * Extension of NotificationTarget Class
  *
  * @template T
- * @extends NotificationTarget<T>
  */
 class NotificationTargetSuperAsset extends NotificationTarget
 {
-
     public function getEvents(): array
     {
         return [
-            'my_event_key' => __('My event label', 'jdplugintutorial')
+            'my_event_key' => __('My event label', 'jdplugintutorial'),
         ];
     }
 
