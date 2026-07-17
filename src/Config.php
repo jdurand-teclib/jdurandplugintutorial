@@ -49,7 +49,6 @@ class Config extends Glpi_Config
         CommonGLPI $config,
         int $withtemplate = 0,
     ): void {
-        global $CFG_GLPI;
 
         if (self::canView()) {
 

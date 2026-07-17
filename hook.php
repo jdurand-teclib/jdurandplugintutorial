@@ -49,6 +49,7 @@ use CronTask;
  */
 function plugin_jdplugintutorial_install(): bool
 {
+    /** @global DBmysql $DB */
     global $DB;
 
     $default_charset   = DBConnection::getDefaultCharset();
@@ -147,23 +148,26 @@ function plugin_jdplugintutorial_install(): bool
 
     // ##### Notifications Setup ##### //
 
-    $DB->insert(NotificationTemplate::getTable(), [
+    $template = new NotificationTemplate();
+    $templateId = $template->add([
         'name' => 'Automatic Super Asset notification template',
         'itemtype' => SuperAsset::getType(),
-        'css' => "body {background-color: purple;}",
+        'css' => "body {background-color: purple;}"
     ]);
 
-    $templateId = $DB->insertId();
-
-    $DB->insert(NotificationTemplateTranslation::getTable(), [
+    $templateTranslation = new NotificationTemplateTranslation();
+    $templateTranslation->add([
         'notificationtemplates_id' => $templateId,
         'subject' => "##superasset.name##",
         'content_text' => '##superasset.phonenumber##',
         'content_html' => '&lt;p&gt;##superasset.name## : ##superasset.phonenumber##&lt;/p&gt;',
     ]);
+
     $notificationTarget = new NotificationTargetSuperAsset();
+    $notification = new Notification();
+    $notificationNotificationTemplate = new Notification_NotificationTemplate();
     foreach ($notificationTarget->getEvents() as $key => $label) {
-        $DB->insert(Notification::getTable(), [
+        $notificationId = $notification->add([
             'name' => 'Automatic Super Asset notification',
             'itemtype' => SuperAsset::getType(),
             'event' => $key,
@@ -172,16 +176,15 @@ function plugin_jdplugintutorial_install(): bool
             'allow_response' => 0,
             'attach_documents' => -2,
         ]);
-        $notificationId = $DB->insertId();
 
-        $DB->insert(NotificationTarget::getTable(), [
+        $notificationTarget->add([
             'items_id' => 4,
             'type' => 2,
             'notifications_id' => $notificationId,
             'is_exclusion' => 0,
         ]);
 
-        $DB->insert(Notification_NotificationTemplate::getTable(), [
+        $notificationNotificationTemplate->add([
             'notifications_id' => $notificationId,
             'mode' => Notification_NotificationTemplate::MODE_MAIL,
             'notificationtemplates_id' => $templateId,
@@ -207,6 +210,7 @@ function plugin_jdplugintutorial_install(): bool
  */
 function plugin_jdplugintutorial_uninstall(): bool
 {
+    /** @global DBmysql $DB */
     global $DB;
 
     $tables = [

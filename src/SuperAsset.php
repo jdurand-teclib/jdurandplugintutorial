@@ -12,6 +12,7 @@ use Computer;
 use GlpiPlugin\Jdplugintutorial\SuperAsset_Item;
 use MassiveAction;
 use NotificationEvent;
+use DBmysql;
 
 use function Safe\preg_match;
 
@@ -176,6 +177,7 @@ class SuperAsset extends CommonDBTM
     public function deleteFromRelations(): void
     {
         $id = $this->getID();
+        /** @global DBmysql $DB */
         global $DB;
 
         $DB->delete(SuperAsset_Item::getTable(), [
@@ -318,6 +320,7 @@ class SuperAsset extends CommonDBTM
 
     public static function linkToComputer(string $computerId, string $superAssetId): bool
     {
+        /** @global DBmysql $DB */
         global $DB;
         $DB->insert(SuperAsset_Item::getTable(), [
             "plugin_jdplugintutorial_superassets_id" => $superAssetId,
@@ -339,6 +342,7 @@ class SuperAsset extends CommonDBTM
 
     public static function cronCreateAutomaticAsset($task = null): bool
     {
+        /** @global DBmysql $DB */
         global $DB;
         $DB->insert(SuperAsset::getTable(), [
             'name' => 'Automatic SuperAsset creation',
