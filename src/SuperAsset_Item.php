@@ -46,11 +46,15 @@ class SuperAsset_Item extends CommonDBRelation
 {
     // From CommonDBRelation
     public static $itemtype_1 = SuperAsset::class;
+
     public static $items_id_1    = 'plugin_jdplugintutorial_superassets_id';
+
     public static $take_entity_1 = false;
 
     public static $itemtype_2    = "itemtype";
+
     public static $items_id_2    = 'items_id';
+
     public static $take_entity_2 = true;
 
     public static function getTypeName($nb = 0)
@@ -68,14 +72,17 @@ class SuperAsset_Item extends CommonDBRelation
             if ($_SESSION['glpishow_count_on_tabs'] && $item instanceof CommonDBTM) {
                 $nb = self::countForMainItem($item);
             }
+
             return self::createTabEntry(_n('Associated item', 'Associated items', Session::getPluralNumber()), $nb, $item::class, 'ti ti-package');
         } elseif (in_array($item->getType(), SuperAsset::getTypes())) {
             if ($_SESSION['glpishow_count_on_tabs'] && $item instanceof CommonDBTM) {
                 $count = self::countForItem($item);
                 return self::createTabEntry(text: SuperAsset::getTypeName(Session::getPluralNumber()), nb: $count, icon: SuperAsset::getIcon());
             }
+
             return self::createTabEntry(text: SuperAsset::getTypeName(Session::getPluralNumber()), icon: SuperAsset::getIcon());
         }
+
         return '';
     }
 
@@ -89,6 +96,7 @@ class SuperAsset_Item extends CommonDBRelation
         } elseif (in_array($item->getType(), SuperAsset::getTypes()) && $item instanceof CommonDBTM) {
             self::showForItem($item, $withtemplate);
         }
+
         return true;
     }
 
@@ -97,7 +105,7 @@ class SuperAsset_Item extends CommonDBRelation
      */
     public static function showForSuperasset(CommonDBTM $superasset, int $withtemplate = 0): void
     {
-        (int) $instID = $superasset->getID();
+        $instID = $superasset->getID();
 
         TemplateRenderer::getInstance()->display('components/form/link_existing_or_new.html.twig', [
             'rand' => mt_rand(),
@@ -122,16 +130,17 @@ class SuperAsset_Item extends CommonDBRelation
         $types_iterator = self::getDistinctTypes($instID, ['itemtype' => SuperAsset::getTypes()]);
         $entries = [];
         foreach ($types_iterator as $type_row) {
-            (string) $itemtype = $type_row['itemtype'];
+            $itemtype = $type_row['itemtype'];
             if (!($item = getItemForItemtype($itemtype))) {
                 continue;
             }
+
             $itemtype_name = $itemtype::getTypeName(1);
 
             if ($item::canView()) {
                 $iterator = self::getTypeItems($instID, $itemtype);
 
-                if (count($iterator)) {
+                if (count($iterator) > 0) {
                     foreach ($iterator as $data) {
                         if (!$item->getFromDB($data["id"])) {
                             continue;
@@ -150,6 +159,7 @@ class SuperAsset_Item extends CommonDBRelation
                         if (Session::isMultiEntitiesMode()) {
                             $entry['entity'] = $item->isEntityAssign() ? Dropdown::getDropdownName("glpi_entities", (int) $data['entity']) : '-';
                         }
+
                         $entries[] = $entry;
                     }
                 }
@@ -220,6 +230,7 @@ class SuperAsset_Item extends CommonDBRelation
             if ($superasset->getFromDB((int) $superassetID)) {
                 $link = $superasset->getLink();
             }
+
             $used[$superassetID] = $superassetID;
 
             $entry = [
@@ -243,6 +254,7 @@ class SuperAsset_Item extends CommonDBRelation
         if (Session::isMultiEntitiesMode()) {
             $columns['entity'] = Entity::getTypeName(1);
         }
+
         $columns['name'] = _n('Name', 'Names', 1);
         $columns['phonenumber'] = __('Phone number');
 

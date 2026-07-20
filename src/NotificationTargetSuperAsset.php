@@ -53,7 +53,6 @@ class NotificationTargetSuperAsset extends NotificationTarget
      * Summary of getDatasForTemplate
      * @param string $event The event key
      * @param array<string, string> $options A list of options
-     * @return void
      */
     public function getDatasForTemplate(string $event, array $options = []): void
     {

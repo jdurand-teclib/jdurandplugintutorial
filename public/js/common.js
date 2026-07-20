@@ -33,7 +33,7 @@ $(function() {
     replaceMainPreferencesIcon();
 });
 
-const replaceMainPreferencesIcon = function()
+function replaceMainPreferencesIcon()
 {
     if (! $("html").hasClass("stuff-added")) {
         $("html").addClass("stuff-added");

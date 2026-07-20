@@ -85,12 +85,12 @@ function plugin_init_jdplugintutorial(): void
     $PLUGIN_HOOKS[Hooks::ADD_JAVASCRIPT]['jdplugintutorial'] = 'js/common.js';
 
     // on ticket page (in edition)
-    if (strpos($_SERVER['REQUEST_URI'], "ticket.form.php") !== false
+    if (str_contains((string) $_SERVER['REQUEST_URI'], "ticket.form.php")
         && isset($_GET['id'])) {
         $PLUGIN_HOOKS[Hooks::ADD_JAVASCRIPT]['jdplugintutorial'] = 'js/ticket.js.php';
     }
 
-    $PLUGIN_HOOKS[Hooks::PRE_ITEM_FORM]['jdplugintutorial'] = [SuperAsset::class, 'preItemForm'];
+    $PLUGIN_HOOKS[Hooks::PRE_ITEM_FORM]['jdplugintutorial'] = SuperAsset::preItemForm(...);
 
     $PLUGIN_HOOKS[Hooks::USE_MASSIVE_ACTION]['jdplugintutorial'] = true;
 

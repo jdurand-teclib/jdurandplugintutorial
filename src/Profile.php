@@ -56,6 +56,7 @@ class Profile extends CommonDBTM
         ) {
             return self::createTabEntry(text: self::getTypeName(), icon: SuperAsset::getIcon());
         }
+
         return '';
     }
 
@@ -83,15 +84,13 @@ class Profile extends CommonDBTM
      **/
     public static function getAllRights(bool $all = false): array
     {
-        $rights = [
+        return [
             [
                 'itemtype' => SuperAsset::class,
                 'label'    => SuperAsset::getTypeName(),
                 'field'    => 'jdplugintutorial::superasset',
             ],
         ];
-
-        return $rights;
     }
 
     /**

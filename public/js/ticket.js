@@ -33,12 +33,12 @@ $(function() {
     addButton();
 });
 
-const addButton = function()
+function addButton()
 {
     if (! $("html").hasClass("stuff-added")) {
         $("html").addClass("stuff-added");
 
-        <button>Coucou</button>
+        // Code to change the content of the page goes here
 
     }
 };

@@ -43,13 +43,12 @@ final class SuperAssetTest extends TestCase
     private function createComputerAsset(): int
     {
         $computer = new Computer();
-        $computerId = $computer->add([
+        return $computer->add([
             "name" => "Testing Computer",
         ]);
-        return $computerId;
     }
 
-    private function createSuperAssetAsset(): int | bool
+    private function createSuperAssetAsset(): int|bool
     {
         $superAsset = new SuperAsset();
         return $superAsset->add([

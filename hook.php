@@ -1,18 +1,5 @@
 <?php
 
-use DBConnection;
-use GlpiPlugin\Jdplugintutorial\SuperAsset;
-use GlpiPlugin\Jdplugintutorial\SuperAsset_Item;
-use GlpiPlugin\Jdplugintutorial\Profile;
-use GlpiPlugin\Jdplugintutorial\NotificationTargetSuperAsset;
-use NotificationTemplate;
-use NotificationTemplateTranslation;
-use Config;
-use Notification;
-use NotificationTarget;
-use Notification_NotificationTemplate;
-use CronTask;
-
 /**
  * -------------------------------------------------------------------------
  * jdplugintutorial plugin for GLPI
@@ -42,7 +29,20 @@ use CronTask;
  * @license   MIT https://opensource.org/licenses/mit-license.php
  * @link      https://github.com/pluginsGLPI/jdplugintutorial
  * -------------------------------------------------------------------------
- */
+*/
+
+use DBConnection;
+use GlpiPlugin\Jdplugintutorial\SuperAsset;
+use GlpiPlugin\Jdplugintutorial\SuperAsset_Item;
+use GlpiPlugin\Jdplugintutorial\Profile;
+use GlpiPlugin\Jdplugintutorial\NotificationTargetSuperAsset;
+use NotificationTemplate;
+use NotificationTemplateTranslation;
+use Config;
+use Notification;
+use NotificationTarget;
+use Notification_NotificationTemplate;
+use CronTask;
 
 /**
  * Plugin install process
@@ -62,7 +62,7 @@ function plugin_jdplugintutorial_install(): bool
     $table = SuperAsset::getTable();
     if (!$DB->tableExists($table)) {
         //table creation query
-        $query = "CREATE TABLE `$table` (
+        $query = "CREATE TABLE `{$table}` (
                   `id`         int unsigned NOT NULL AUTO_INCREMENT,
                   `is_deleted` TINYINT NOT NULL DEFAULT '0',
                   `name`      VARCHAR(255) NOT NULL,
@@ -78,7 +78,7 @@ function plugin_jdplugintutorial_install(): bool
     $items_table = SuperAsset_Item::getTable();
     if (!$DB->tableExists($items_table)) {
         //table creation query
-        $query2 = "CREATE TABLE `$items_table` (
+        $query2 = "CREATE TABLE `{$items_table}` (
                     `id`        int unsigned NOT NULL AUTO_INCREMENT,
                     `plugin_jdplugintutorial_superassets_id`        int unsigned NOT NULL DEFAULT '0',
                     `itemtype`      VARCHAR(255) DEFAULT NULL,
@@ -166,7 +166,7 @@ function plugin_jdplugintutorial_install(): bool
     $notificationTarget = new NotificationTargetSuperAsset();
     $notification = new Notification();
     $notificationNotificationTemplate = new Notification_NotificationTemplate();
-    foreach ($notificationTarget->getEvents() as $key => $label) {
+    foreach (array_keys($notificationTarget->getEvents()) as $key) {
         $notificationId = $notification->add([
             'name' => 'Automatic Super Asset notification',
             'itemtype' => SuperAsset::getType(),
@@ -221,7 +221,7 @@ function plugin_jdplugintutorial_uninstall(): bool
     foreach ($tables as $table) {
         if ($DB->tableExists($table)) {
             $DB->doQuery(
-                "DROP TABLE `$table`",
+                sprintf('DROP TABLE `%s`', $table),
             );
         }
     }
@@ -274,7 +274,7 @@ function plugin_jdplugintutorial_uninstall(): bool
     $DB->delete(NotificationTemplate::getTable(), [
         'itemtype' => SuperAsset::getType(),
     ]);
-    if (count($notificationsIds) > 0) {
+    if ($notificationsIds !== []) {
         $DB->delete(Notification_NotificationTemplate::getTable(), [
             'notifications_id' => $notificationsIds,
         ]);
@@ -282,7 +282,8 @@ function plugin_jdplugintutorial_uninstall(): bool
             'notifications_id' => $notificationsIds,
         ]);
     }
-    if (count($templatesIds) > 0) {
+
+    if ($templatesIds !== []) {
         $DB->delete(NotificationTemplateTranslation::getTable(), [
             'notificationtemplates_id' => $templatesIds,
         ]);
@@ -326,7 +327,6 @@ function plugin_jdplugintutorial_getAddSearchOptionsNew(string $itemtype): array
 /**
  * Fallback method called when a Computer is purged. Deletes all relations between this computer and any SuperAsset item
  * @param CommonDBTM $item Purged computer
- * @return void
  */
 function jdplugintutorial_purge_computer_called(CommonDBTM $item): void
 {
@@ -358,14 +358,12 @@ function jdplugintutorial_pre_item_form_computer(array $params): string
 function plugin_jdplugintutorial_MassiveActions(string $type): array
 {
     $actions = [];
-    switch ($type) {
-        case Computer::class:
-            $class = SuperAsset::class;
-            $key   = 'superasset_link';
-            $label = __("Link SuperAsset");
-            $actions[$class . MassiveAction::CLASS_ACTION_SEPARATOR . $key] = $label;
-
-            break;
+    if ($type === Computer::class) {
+        $class = SuperAsset::class;
+        $key   = 'superasset_link';
+        $label = __("Link SuperAsset");
+        $actions[$class . MassiveAction::CLASS_ACTION_SEPARATOR . $key] = $label;
     }
+
     return $actions;
 }

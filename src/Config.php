@@ -56,10 +56,10 @@ class Config extends Glpi_Config
 
     public function getTabNameForItem(CommonGLPI $item, $withtemplate = 0): string
     {
-        switch ($item->getType()) {
-            case Glpi_Config::class:
-                return self::createTabEntry(self::getTypeName());
+        if ($item->getType() === Glpi_Config::class) {
+            return self::createTabEntry(self::getTypeName());
         }
+
         return '';
     }
 
@@ -68,9 +68,8 @@ class Config extends Glpi_Config
         $tabnum = 1,
         $withtemplate = 0,
     ): bool {
-        switch ($item->getType()) {
-            case Glpi_Config::class:
-                self::showForConfig($item, $withtemplate);
+        if ($item->getType() === Glpi_Config::class) {
+            self::showForConfig($item, $withtemplate);
         }
 
         return true;

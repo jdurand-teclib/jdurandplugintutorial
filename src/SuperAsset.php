@@ -43,7 +43,6 @@ use Computer;
 use GlpiPlugin\Jdplugintutorial\SuperAsset_Item;
 use MassiveAction;
 use NotificationEvent;
-use DBmysql;
 
 use function Safe\preg_match;
 
@@ -51,6 +50,7 @@ class SuperAsset extends CommonDBTM
 {
     // right management, we'll change this later
     public static $rightname = 'jdplugintutorial::superasset';
+
     public const RIGHT_ONE = 128;
 
     // permits to automaticaly store logs for this itemtype
@@ -128,29 +128,21 @@ class SuperAsset extends CommonDBTM
 
     public function rawSearchOptions(): array
     {
-        $options = [];
-
-        $options[] = [
+        return [[
             'id'   => 'common',
             'name' => __('Characteristics'),
-        ];
-
-        $options[] = [
+        ], [
             'id'    => 1,
             'table' => self::getTable(),
             'field' => 'name',
             'name'  => __('Name'),
             'datatype' => 'itemlink',
-        ];
-
-        $options[] = [
+        ], [
             'id'    => 2,
             'table' => self::getTable(),
             'field' => 'id',
             'name'  => __('ID'),
-        ];
-
-        $options[] = [
+        ], [
             'id'           => 3,
             'table'        => Superasset_Item::getTable(),
             'field'        => 'id',
@@ -161,9 +153,7 @@ class SuperAsset extends CommonDBTM
             'joinparams'   => [
                 'jointype' => 'child',
             ],
-        ];
-
-        return $options;
+        ]];
     }
 
     public function defineTabs($options = []): array
@@ -187,6 +177,7 @@ class SuperAsset extends CommonDBTM
         if (self::checkInput($input)) {
             return $input;
         }
+
         return false;
     }
 
@@ -221,6 +212,7 @@ class SuperAsset extends CommonDBTM
         if (self::checkInput($input)) {
             return $input;
         }
+
         return false;
     }
 
@@ -239,11 +231,12 @@ class SuperAsset extends CommonDBTM
         }
 
         $phonenumberformat = "/^(?:(?:\+|00)33|0)\s*[1-9](?:[\s.-]*\d{2}){4}$/";
-        if (!preg_match($phonenumberformat, $input["phonenumber"])) {
+        if (preg_match($phonenumberformat, $input["phonenumber"]) === 0) {
             Session::addMessageAfterRedirect(sprintf(__s('The %s must be in french format (XX XX XX XX XX or +33 X XX XX XX XX'), 'phonenumber'), false, ERROR);
 
             return false;
         }
+
         return true;
     }
 
@@ -279,7 +272,7 @@ class SuperAsset extends CommonDBTM
         $actions = parent::getSpecificMassiveActions($checkitem);
 
         // add a single massive action
-        $class        = __CLASS__;
+        $class        = self::class;
         $action_key   = "computer_link";
         $action_label = "Link to a computer";
         $actions[$class . MassiveAction::CLASS_ACTION_SEPARATOR . $action_key] = $action_label;
@@ -326,6 +319,7 @@ class SuperAsset extends CommonDBTM
                         $ma->addMessage(__("Something went wrong"));
                     }
                 }
+
                 return;
 
             case 'superasset_link':
@@ -343,6 +337,7 @@ class SuperAsset extends CommonDBTM
                         $ma->addMessage(__("Something went wrong"));
                     }
                 }
+
                 return;
         }
 
@@ -364,10 +359,10 @@ class SuperAsset extends CommonDBTM
     public static function cronInfo($name): array
     {
 
-        switch ($name) {
-            case 'createautomaticasset':
-                return ['description' => __('Atuomaticaly create an asset', 'jdplugintutorial')];
+        if ($name === 'createautomaticasset') {
+            return ['description' => __('Atuomaticaly create an asset', 'jdplugintutorial')];
         }
+
         return [];
     }
 
