@@ -152,7 +152,7 @@ function plugin_jdplugintutorial_install(): bool
     $templateId = $template->add([
         'name' => 'Automatic Super Asset notification template',
         'itemtype' => SuperAsset::getType(),
-        'css' => "body {background-color: purple;}"
+        'css' => "body {background-color: purple;}",
     ]);
 
     $templateTranslation = new NotificationTemplateTranslation();
