@@ -54,7 +54,7 @@ final class SuperAssetTest extends TestCase
         $superAsset = new SuperAsset();
         return $superAsset->add([
             "name" => "Matt Smith",
-            "phonenumer" => "06 41 23 65 58",
+            "phonenumber" => "06 41 23 65 58",
             "created_at" => date("Y-m-d"),
         ]);
     }
@@ -64,7 +64,7 @@ final class SuperAssetTest extends TestCase
         $superAsset = new SuperAsset();
         $superAssetId = $superAsset->add([
             "name" => "Peter Capaldi",
-            "phonenumer" => "06 54 58 57 59",
+            "phonenumber" => "06 54 58 57 59",
             "created_at" => date("Y-m-d"),
         ]);
 
@@ -76,7 +76,7 @@ final class SuperAssetTest extends TestCase
         $superAsset = new SuperAsset();
         $superAssetId = $superAsset->add([
             "name" => "",
-            "phonenumer" => "06 54 58 57 59",
+            "phonenumber" => "06 54 58 57 59",
             "created_at" => date("Y-m-d"),
         ]);
 
@@ -88,7 +88,7 @@ final class SuperAssetTest extends TestCase
         $superAsset = new SuperAsset();
         $superAssetId = $superAsset->add([
             "name" => "David Tennant",
-            "phonenumer" => "06 54 58 57 5",
+            "phonenumber" => "06 54 58 57 5",
             "created_at" => date("Y-m-d"),
         ]);
 
