@@ -107,4 +107,24 @@ final class SuperAssetTest extends TestCase
 
         $this->assertNotFalse($superAssetItemId);
     }
+
+    public function testDeleteSuperAssetsAlsoDeletesLink(): void
+    {
+        $superAsset = new SuperAsset();
+        $superAssetItem = new SuperAsset_Item();
+
+        $superAssetId = $this->createSuperAssetAsset();
+        $computerId = $this->createComputerAsset();
+        $superAssetItemId = $superAssetItem->add([
+            "plugin_jdplugintutorial_superassets_id" => $superAssetId,
+            "itemtype" => Computer::getType(),
+            "items_id" => $computerId,
+        ]);
+        $this->assertNotFalse($superAssetItemId);
+
+        $superAsset->delete(["id" => $superAssetId]);
+
+        $this->assertFalse($superAssetItem->getFromDB($superAssetItemId));
+
+    }
 }
