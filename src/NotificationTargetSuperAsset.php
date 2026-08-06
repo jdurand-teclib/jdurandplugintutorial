@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * -------------------------------------------------------------------------
  * jdplugintutorial plugin for GLPI
@@ -30,7 +32,6 @@
  * @link      https://github.com/pluginsGLPI/jdplugintutorial
  * -------------------------------------------------------------------------
  */
-
 namespace GlpiPlugin\Jdplugintutorial;
 
 use NotificationTarget;
