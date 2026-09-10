@@ -37,7 +37,6 @@ use GlpiPlugin\Jdplugintutorial\SuperAsset;
 use GlpiPlugin\Jdplugintutorial\SuperAsset_Item;
 use GlpiPlugin\Jdplugintutorial\Config;
 use GlpiPlugin\Jdplugintutorial\Profile;
-use Computer;
 use Glpi\Plugin\Hooks;
 use Profile as Glpi_Profile;
 use Config as Glpi_Config;
